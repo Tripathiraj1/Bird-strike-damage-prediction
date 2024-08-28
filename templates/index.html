@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bird Strike Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <h1>Bird Strike Damage Prediction</h1>
+        <form method="post" id="predictionForm">
+            <!-- FlightDate field -->
+            <div class="form-group">
+                <label for="FlightDate">Flight Date and Time:</label>
+                <input type="text" name="FlightDate" id="FlightDate" class="form-control" required>
+            </div>
+            
+            <!-- Other form fields -->
+            {% for column in unique_values.keys() %}
+                {% if column == 'Wildlife Number Struck Actual' or column == 'Feet above ground' %}
+                    <div class="form-group">
+                        <label for="{{ column }}">{{ column }}:</label>
+                        <input type="number" name="{{ column }}" id="{{ column }}" class="form-control" required placeholder="Enter number" min="0" step="1">
+                    </div>
+                {% elif column != 'Altitude bin' and column != 'Wildlife Number struck' and column != 'FlightDate' %}
+                    <div class="form-group">
+                        <label for="{{ column }}">{{ column }}:</label>
+                        <select name="{{ column }}" id="{{ column }}" class="select2 form-control" style="width: 100%;" required>
+                            <option value="" disabled selected>Select an option</option>
+                            {% for value in unique_values[column] %}
+                            <option value="{{ value }}">{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            
+            <input type="submit" value="Predict">
+        </form>
+    </div>
+    
+    <!-- jQuery JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Automatically set current date and time in the format YY:DD:MM:HH:MM
+            function getFormattedDateTime() {
+                const now = new Date();
+                const year = String(now.getFullYear()).slice(2);
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                return `${year}:${day}:${month}:${hours}:${minutes}`;
+            }
+
+            $('#FlightDate').val(getFormattedDateTime());
+
+            // Initialize Select2 for other dropdowns
+            $('.select2').select2({
+                width: 'resolve',
+                placeholder: 'Select an option'
+            });
+
+            // Form submission logic remains unchanged
+        });
+    </script>
+</body>
+</html>
